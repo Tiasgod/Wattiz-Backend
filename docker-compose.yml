@@ -1,0 +1,74 @@
+version: "3.9"
+
+services:
+  # ── API FastAPI ─────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wattiz_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - OLLAMA_BASE_URL=http://ollama:11434
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./app:/app/app   # hot-reload em desenvolvimento
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - wattiz_net
+
+  # ── PostgreSQL ───────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: wattiz_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-wattiz}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wattiz_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-wattiz_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wattiz} -d ${POSTGRES_DB:-wattiz_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wattiz_net
+
+  # ── Ollama (IA Lume) ──────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: wattiz_ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # Descomente para GPU NVIDIA:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+    networks:
+      - wattiz_net
+
+volumes:
+  postgres_data:
+  ollama_data:
+
+networks:
+  wattiz_net:
+    driver: bridge

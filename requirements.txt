@@ -1,0 +1,24 @@
+# ── Core ─────────────────────────────────────────────────────
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+python-multipart==0.0.9          # form data (OAuth2PasswordRequestForm)
+
+# ── Banco de dados ────────────────────────────────────────────
+sqlalchemy==2.0.30
+asyncpg==0.29.0                  # driver async PostgreSQL
+alembic==1.13.1                  # migrations
+
+# ── Validação / Settings ──────────────────────────────────────
+pydantic==2.7.1
+pydantic-settings==2.3.1
+pydantic[email]                  # EmailStr
+
+# ── Autenticação ──────────────────────────────────────────────
+python-jose[cryptography]==3.3.0  # JWT
+passlib[bcrypt]==1.7.4            # hash de senha
+
+# ── IA / HTTP ─────────────────────────────────────────────────
+httpx==0.27.0                    # cliente HTTP async para Ollama
+
+# ── Utilitários ───────────────────────────────────────────────
+python-dotenv==1.0.1
