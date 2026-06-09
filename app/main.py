@@ -2,18 +2,13 @@
 app/main.py
 ───────────
 Ponto de entrada da aplicação FastAPI da Wattiz.
-
-Responsabilidades:
-  1. Instanciar o app FastAPI com metadados (Swagger)
-  2. Registrar middlewares (CORS, logging)
-  3. Registrar todos os routers
-  4. Criar tabelas no banco ao iniciar (dev) ou usar Alembic (prod)
-  5. Expor health check
 """
 
+import asyncio
 import logging
 import logging.config
 
+import sqlalchemy as sa
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -72,44 +67,33 @@ app.include_router(api_router)
 # ── Startup / Shutdown ────────────────────────────────────────────────────────
 @app.on_event("startup")
 async def on_startup() -> None:
-    """
-    Inicialização do servidor.
-    Roda as migrations do Alembic automaticamente (dev e produção).
-    """
     logger.info("🚀 Wattiz API v%s iniciando...", settings.APP_VERSION)
 
-    # Roda migrations Alembic (cria/atualiza tabelas automaticamente)
-    try:
-        import subprocess
-        result = subprocess.run(
-            ["alembic", "upgrade", "head"],
-            capture_output=True,
-            text=True,
-            timeout=60,
-        )
-        if result.returncode == 0:
-            logger.info("✅ Migrations aplicadas com sucesso.")
-        else:
-            logger.warning("⚠️ Alembic stderr: %s", result.stderr[:300])
-            # Fallback: cria tabelas diretamente se Alembic falhar
-            from app.database.base import Base
-            from app.database.session import engine
-            from app.models import user, appliance, tariff, consumption, report  # noqa
-            async with engine.begin() as conn:
-                await conn.run_sync(Base.metadata.create_all)
-            logger.info("✅ Tabelas criadas via SQLAlchemy (fallback).")
-    except Exception as e:
-        logger.error("❌ Erro ao rodar migrations: %s", e)
-        # Fallback final: cria tabelas diretamente
+    from app.database.session import engine
+    from app.database.base import Base
+    from app.models import user, appliance, tariff, consumption, report  # noqa
+
+    # Aguarda o banco ficar pronto (até 30 segundos)
+    for attempt in range(10):
         try:
-            from app.database.base import Base
-            from app.database.session import engine
-            from app.models import user, appliance, tariff, consumption, report  # noqa
             async with engine.begin() as conn:
-                await conn.run_sync(Base.metadata.create_all)
-            logger.info("✅ Tabelas criadas via fallback SQLAlchemy.")
-        except Exception as e2:
-            logger.critical("❌ Falha crítica ao criar tabelas: %s", e2)
+                await conn.execute(sa.text("SELECT 1"))
+            logger.info("✅ Banco de dados conectado!")
+            break
+        except Exception as e:
+            logger.warning("⏳ Aguardando banco... tentativa %d/10: %s", attempt + 1, e)
+            await asyncio.sleep(3)
+    else:
+        logger.critical("❌ Banco de dados não respondeu após 10 tentativas.")
+        return
+
+    # Cria tabelas
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("✅ Tabelas criadas/verificadas com sucesso.")
+    except Exception as e:
+        logger.error("❌ Erro ao criar tabelas: %s", e)
 
     logger.info("📡 Banco de dados: conectado")
     logger.info("🤖 Ollama: %s (modelo: %s)", settings.OLLAMA_BASE_URL, settings.OLLAMA_MODEL)
