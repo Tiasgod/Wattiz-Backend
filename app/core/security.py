@@ -10,7 +10,7 @@ from passlib.context import CryptContext
 from app.core.config import settings
 
 # ── Contexto de hash (bcrypt) ─────────────────────────────────────────────────
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
 
 # ─── Hash / verificação de senha ──────────────────────────────────────────────
 def hash_password(plain: str) -> str:
