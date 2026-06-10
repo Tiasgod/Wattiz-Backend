@@ -15,7 +15,8 @@ pydantic[email]                  # EmailStr
 
 # ── Autenticação ──────────────────────────────────────────────
 python-jose[cryptography]==3.3.0  # JWT
-passlib[bcrypt]==1.7.4            # hash de senha
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1       # hash de senha
 
 # ── IA / HTTP ─────────────────────────────────────────────────
 httpx==0.27.0                    # cliente HTTP async para Ollama
