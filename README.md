@@ -1,11 +1,11 @@
-# ⚡ Wattiz — Backend API
+# Wattiz — Backend API
 
 > Plataforma de Inteligência Energética para famílias brasileiras.  
 > Monitore, entenda e economize energia com ajuda da IA **Lume**.
 
 ---
 
-## 📁 Estrutura do Projeto
+## Estrutura do Projeto
 
 ```
 backend/
@@ -80,7 +80,7 @@ backend/
 
 ---
 
-## 🚀 Como Rodar Localmente
+## Como Rodar Localmente
 
 ### Pré-requisitos
 
@@ -129,7 +129,7 @@ open http://localhost:8000/docs
 
 ---
 
-## ⚙️ Variáveis de Ambiente (`.env`)
+## Variáveis de Ambiente (`.env`)
 
 | Variável | Descrição | Padrão |
 |---|---|---|
@@ -151,7 +151,7 @@ python -c "import secrets; print(secrets.token_hex(32))"
 
 ---
 
-## 📡 Endpoints da API
+## Endpoints da API
 
 ### Autenticação
 | Método | Rota | Descrição |
@@ -191,7 +191,7 @@ python -c "import secrets; print(secrets.token_hex(32))"
 
 ---
 
-## 🤖 Fluxo da IA Lume
+## Fluxo da IA Lume
 
 ```
 Usuário faz pergunta
@@ -225,7 +225,7 @@ ao usuário
 
 ---
 
-## 🏗️ Decisões Arquiteturais
+## Decisões Arquiteturais
 
 ### Clean Architecture
 Cada camada tem responsabilidade única:
@@ -247,7 +247,7 @@ O `EnergyEngine` é completamente determinístico (sem IA). A Lume recebe os dad
 
 ---
 
-## 🔗 Integração com Front-End React
+## Integração com Front-End React
 
 ```typescript
 // Exemplo de autenticação
@@ -289,45 +289,8 @@ const chatLume = async (message: string) => {
 
 ---
 
-## 📈 Como Escalar no Futuro
 
-### Curto prazo
-- Adicionar **Redis** para cache de dashboards (evitar recalcular a cada request)
-- Implementar **rate limiting** nos endpoints da Lume (chamadas ao Ollama são custosas)
-- Adicionar **Celery + Redis** para geração de relatórios em background
-
-### Médio prazo
-- **Múltiplos workers Uvicorn** atrás de Nginx
-- **Réplicas de leitura** do PostgreSQL para queries analíticas pesadas
-- **Streaming de respostas** da Lume via SSE (Server-Sent Events)
-
-### Integração IoT (futuro)
-```
-Dispositivo IoT
-      │  MQTT / HTTP
-      ▼
-[IoT Gateway Service]     ← novo serviço
-      │
-      ▼
-[Message Broker: RabbitMQ/Kafka]
-      │
-      ▼
-[Consumer Service]        ← processa leituras em background
-  grava ConsumptionRecord
-  com timestamp real
-      │
-      ▼
-[WebSocket Hub]           ← dashboard em tempo real
-      │
-      ▼
-Front-end React
-```
-
-A tabela `consumption_records` já está preparada para receber dados de IoT — basta adicionar o campo `device_id` e a origem da leitura.
-
----
-
-## 🔧 Migrations (Alembic)
+## Migrations (Alembic)
 
 ```bash
 # Criar nova migration
@@ -342,7 +305,7 @@ docker exec wattiz_api alembic downgrade -1
 
 ---
 
-## 🧪 Testando a API
+## Testando a API
 
 Acesse `http://localhost:8000/docs` para a interface Swagger interativa.
 
@@ -357,6 +320,6 @@ Fluxo de teste manual:
 
 ---
 
-## 📄 Licença
+## Licença
 
 MIT — Wattiz © 2025
